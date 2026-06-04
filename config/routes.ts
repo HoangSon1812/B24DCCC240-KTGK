@@ -52,6 +52,13 @@
 	// },
 
 	{
+		path: '/quan-ly-phong-hoc',
+		name: 'Quản lý phòng học',
+		component: './QuanLyPhongHoc',
+		icon: 'HomeOutlined',
+	},
+
+	{
 		path: '/notification',
 		routes: [
 			{
