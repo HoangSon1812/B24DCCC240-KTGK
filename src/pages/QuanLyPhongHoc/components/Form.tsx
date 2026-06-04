@@ -28,11 +28,11 @@ const FormPhongHoc = (props: any) => {
 
   const onFinish = async (values: PhongHoc.IRecord) => {
     if (edit) {
-      putModel(record?._id ?? '', values).catch((er) => console.log(er));
+      putModel(record?._id ?? '', values).catch(() => {});
     } else {
       postModel(values)
         .then(() => form.resetFields())
-        .catch((er) => console.log(er));
+        .catch(() => {});
     }
   };
 
