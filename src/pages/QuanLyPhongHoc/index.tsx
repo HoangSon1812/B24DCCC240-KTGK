@@ -16,6 +16,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import {
+  Badge,
   Button,
   Card,
   Col,
@@ -27,9 +28,9 @@ import {
   Progress,
   Row,
   Select,
+  Divider,
   Space,
   Spin,
-  Statistic,
   Table,
   Tag,
   Tooltip,
@@ -70,47 +71,35 @@ const SeatProgress = ({ val }: { val: number }) => {
   const percent = Math.round(((val - 10) / (200 - 10)) * 100);
   return (
     <Tooltip title={`${val} / 200 chỗ ngồi (${percent}%)`}>
-      <div style={{ padding: '0 4px', cursor: 'default' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-          <span style={{ fontSize: 12, fontWeight: 600, color: getSeatColor(val) }}>{val}</span>
-          <span style={{ fontSize: 11, color: '#aaa' }}>/ 200</span>
+      <div style={{ cursor: 'default', minWidth: 100 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 4 }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: getSeatColor(val), lineHeight: 1 }}>{val}</span>
+          <span style={{ fontSize: 11, color: '#bbb' }}>/ 200</span>
         </div>
-        <Progress percent={percent} showInfo={false} size="small" strokeColor={getSeatColor(val)} />
+        <Progress percent={percent} showInfo={false} size="small" strokeColor={getSeatColor(val)} style={{ margin: 0 }} />
       </div>
     </Tooltip>
   );
 };
 
-const DeleteAction = ({
-  record,
-  onDelete,
-  compact,
-}: {
-  record: PhongHoc.IRecord;
-  onDelete: () => void;
-  compact?: boolean;
-}) => {
+const DeleteAction = ({ record, onDelete }: { record: PhongHoc.IRecord; onDelete: () => void }) => {
   if (record.soChoNgoi < 30) {
     return (
-      <Tooltip title="Xóa phòng này">
-        <Popconfirm
-          onConfirm={onDelete}
-          title={<span>Xóa phòng <b>{record.ten}</b>?</span>}
-          placement="topLeft"
-          okText="Xóa"
-          cancelText="Hủy"
-          okButtonProps={{ danger: true }}
-        >
-          <Button danger type={compact ? 'text' : 'link'} size={compact ? 'small' : 'middle'} icon={<DeleteOutlined />} />
-        </Popconfirm>
-      </Tooltip>
+      <Popconfirm
+        onConfirm={onDelete}
+        title={<span>Xóa phòng <b>{record.ten}</b>?</span>}
+        placement="topLeft"
+        okText="Xóa"
+        cancelText="Hủy"
+        okButtonProps={{ danger: true }}
+      >
+        <Button danger type="link" icon={<DeleteOutlined />} />
+      </Popconfirm>
     );
   }
   return (
-    <Tooltip title={`Phòng có ${record.soChoNgoi} chỗ ≥ 30, không được phép xóa`}>
-      <Tag icon={<LockOutlined />} color="default" style={{ cursor: 'not-allowed', fontSize: 11 }}>
-        Không xóa được
-      </Tag>
+    <Tooltip title={`Phòng có ${record.soChoNgoi} chỗ ≥ 30 — không được phép xóa`}>
+      <Button type="link" icon={<LockOutlined />} disabled style={{ color: '#d9d9d9' }} />
     </Tooltip>
   );
 };
@@ -224,7 +213,7 @@ const QuanLyPhongHocPage = () => {
     {
       title: 'Thao tác',
       align: 'center',
-      width: 140,
+      width: 90,
       fixed: 'right',
       render: (record: PhongHoc.IRecord) => (
         <Space size={0}>
@@ -247,80 +236,117 @@ const QuanLyPhongHocPage = () => {
 
   return (
     <div className="phong-hoc-page">
-      <Card title="Quản lý phòng học" bordered={false}>
+      <Card
+        bordered={false}
+        title={
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span>Quản lý phòng học</span>
+              <Badge count={statsByType.total} style={{ backgroundColor: '#1677ff' }} />
+            </div>
+            <div style={{ fontSize: 12, fontWeight: 400, color: '#999', marginTop: 2 }}>
+              Quản lý thông tin các phòng học trong trường
+            </div>
+          </div>
+        }
+        extra={
+          hasActiveFilters ? (
+            <span style={{ fontSize: 13, color: '#888' }}>
+              Đang lọc&nbsp;<b style={{ color: '#1677ff' }}>{total}</b>&nbsp;/&nbsp;{statsByType.total} phòng
+            </span>
+          ) : null
+        }
+      >
 
-        <Row gutter={12} style={{ marginBottom: 16 }}>
+        <Row gutter={14} style={{ marginBottom: 20 }}>
           {STAT_CARDS.map(({ key, label, icon, color }) => (
             <Col key={key} span={6}>
               <Card
-                size="small"
                 bordered={false}
-                style={{ background: `${color}08`, borderLeft: `3px solid ${color}`, borderRadius: 6 }}
-                bodyStyle={{ padding: '10px 14px' }}
+                style={{
+                  borderLeft: `3px solid ${color}`,
+                  borderRadius: 10,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                }}
+                bodyStyle={{ padding: '16px 20px' }}
               >
-                <Statistic
-                  title={<span style={{ fontSize: 12, color: '#666' }}>{icon}&nbsp;{label}</span>}
-                  value={statsByType[key]}
-                  valueStyle={{ fontSize: 22, fontWeight: 700, color }}
-                  suffix="phòng"
-                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: 12, color: '#888', fontWeight: 500 }}>{label}</span>
+                  <div style={{
+                    width: 34, height: 34, borderRadius: 8,
+                    background: `${color}15`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color, fontSize: 16, flexShrink: 0,
+                  }}>
+                    {icon}
+                  </div>
+                </div>
+                <div style={{ marginTop: 10, lineHeight: 1 }}>
+                  <span style={{ fontSize: 30, fontWeight: 700, color }}>{statsByType[key]}</span>
+                </div>
+                <div style={{ fontSize: 11, color: '#bbb', marginTop: 4 }}>phòng học</div>
               </Card>
             </Col>
           ))}
         </Row>
 
         <div className="page-toolbar">
-          <Space wrap>
-            <Input.Search
-              placeholder="Tìm mã, tên phòng..."
-              allowClear
-              style={{ width: 210 }}
-              value={globalSearch}
-              onSearch={handleSearch}
-              onChange={(e) => { if (!e.target.value) handleSearch(''); else setGlobalSearch(e.target.value); }}
-            />
-            <Select
-              mode="multiple"
-              placeholder="Loại phòng"
-              allowClear
-              style={{ minWidth: 155 }}
-              maxTagCount={1}
-              value={getFilterValues('loaiPhong')}
-              onChange={(v) => updateFilters('loaiPhong', v)}
-            >
-              {(Object.keys(LOAI_PHONG_LABEL) as PhongHoc.ELoaiPhong[]).map((k) => (
-                <Select.Option key={k} value={k}>
-                  <Tag color={LOAI_PHONG_COLOR[k]}>{LOAI_PHONG_LABEL[k]}</Tag>
-                </Select.Option>
-              ))}
-            </Select>
-            <Select
-              mode="multiple"
-              placeholder="Người phụ trách"
-              allowClear
-              style={{ minWidth: 175 }}
-              maxTagCount={1}
-              value={getFilterValues('nguoiPhuTrach')}
-              onChange={(v) => updateFilters('nguoiPhuTrach', v)}
-            >
-              {DANH_SACH_NGUOI_PHU_TRACH.map((n) => (
-                <Select.Option key={n} value={n}>{n}</Select.Option>
-              ))}
-            </Select>
+          <Space size={0} wrap>
+            <Space size={6}>
+              <Input.Search
+                placeholder="Tìm mã, tên phòng..."
+                allowClear
+                style={{ width: 190 }}
+                value={globalSearch}
+                onSearch={handleSearch}
+                onChange={(e) => { if (!e.target.value) handleSearch(''); else setGlobalSearch(e.target.value); }}
+              />
+              <Select
+                mode="multiple"
+                placeholder="Loại phòng"
+                allowClear
+                style={{ minWidth: 140 }}
+                maxTagCount={1}
+                value={getFilterValues('loaiPhong')}
+                onChange={(v) => updateFilters('loaiPhong', v)}
+              >
+                {(Object.keys(LOAI_PHONG_LABEL) as PhongHoc.ELoaiPhong[]).map((k) => (
+                  <Select.Option key={k} value={k}>
+                    <Tag color={LOAI_PHONG_COLOR[k]}>{LOAI_PHONG_LABEL[k]}</Tag>
+                  </Select.Option>
+                ))}
+              </Select>
+              <Select
+                mode="multiple"
+                placeholder="Người phụ trách"
+                allowClear
+                style={{ minWidth: 160 }}
+                maxTagCount={1}
+                value={getFilterValues('nguoiPhuTrach')}
+                onChange={(v) => updateFilters('nguoiPhuTrach', v)}
+              >
+                {DANH_SACH_NGUOI_PHU_TRACH.map((n) => (
+                  <Select.Option key={n} value={n}>{n}</Select.Option>
+                ))}
+              </Select>
+            </Space>
+
+            <Divider type="vertical" style={{ height: 24, margin: '0 10px', borderColor: '#d9d9d9' }} />
+
             <Select
               placeholder="Sắp xếp số chỗ"
               allowClear
-              style={{ width: 165 }}
+              style={{ width: 155 }}
               value={currentSort}
               onChange={handleSortChange}
               suffixIcon={<SortAscendingOutlined />}
             >
-              <Select.Option value="soChoNgoi:1">Số chỗ tăng dần</Select.Option>
-              <Select.Option value="soChoNgoi:-1">Số chỗ giảm dần</Select.Option>
+              <Select.Option value="soChoNgoi:1">Tăng dần</Select.Option>
+              <Select.Option value="soChoNgoi:-1">Giảm dần</Select.Option>
             </Select>
           </Space>
 
-          <Space>
+          <Space size={6}>
             <Tooltip title="Xem dạng bảng">
               <Button
                 icon={<UnorderedListOutlined />}
@@ -335,6 +361,7 @@ const QuanLyPhongHocPage = () => {
                 onClick={() => setViewMode('card')}
               />
             </Tooltip>
+            <Divider type="vertical" style={{ height: 24, margin: '0 4px', borderColor: '#d9d9d9' }} />
             <Button type="primary" icon={<PlusCircleOutlined />} onClick={openCreateForm}>
               Thêm mới
             </Button>
@@ -345,6 +372,7 @@ const QuanLyPhongHocPage = () => {
           {viewMode === 'table' ? (
             <Table
               bordered
+              size="middle"
               loading={loading}
               rowKey="_id"
               dataSource={danhSach}
@@ -352,6 +380,7 @@ const QuanLyPhongHocPage = () => {
               pagination={false}
               scroll={{ x: 960 }}
               locale={{ emptyText: emptyState }}
+              rowClassName={() => 'phong-hoc-row'}
             />
           ) : (
             <Spin spinning={loading}>
@@ -374,7 +403,7 @@ const QuanLyPhongHocPage = () => {
                             <Tooltip title="Chỉnh sửa">
                               <Button size="small" type="text" icon={<EditOutlined />} onClick={() => handleEdit(room)} />
                             </Tooltip>
-                            <DeleteAction record={room} compact onDelete={() => deleteModel(room._id, getModel)} />
+                            <DeleteAction record={room} onDelete={() => deleteModel(room._id, getModel)} />
                           </Space>
                         </div>
                         <div className="room-card-ma">{highlight(room.ma)}</div>
